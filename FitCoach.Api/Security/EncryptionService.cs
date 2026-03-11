@@ -12,7 +12,7 @@ public class EncryptionService
     public EncryptionService(IConfiguration configuration)
     {
         var base64Key = configuration["Encryption:Key"]
-                        ?? throw new InvalidOperationException("Encryption:Key is missing from configuration.");
+            ?? throw new InvalidOperationException("Encryption:Key is missing from configuration.");
 
         _key = Convert.FromBase64String(base64Key);
     }

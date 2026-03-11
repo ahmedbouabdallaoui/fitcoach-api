@@ -1,3 +1,4 @@
+using FitCoach.Api.Infrastructure.MongoDB;
 using FitCoach.Api.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Scalar.AspNetCore;
@@ -28,6 +29,10 @@ builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.Authenticati
 
 builder.Services.AddAuthorization();
 builder.Services.AddSingleton<EncryptionService>();
+//"It is recommended to store a MongoClient instance in a global place,
+//either as a static variable or in an IoC container with a singleton lifetime."//
+
+builder.Services.AddSingleton<MongoDbContext>();
 
 // ---------------------------------------------------
 var app = builder.Build();
