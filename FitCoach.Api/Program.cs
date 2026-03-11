@@ -1,3 +1,4 @@
+using FitCoach.Api.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Scalar.AspNetCore;
 
@@ -26,6 +27,7 @@ builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.Authenticati
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddSingleton<EncryptionService>();
 
 // ---------------------------------------------------
 var app = builder.Build();
