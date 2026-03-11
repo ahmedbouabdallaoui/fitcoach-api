@@ -1,7 +1,60 @@
 ﻿services:
-  webapplication1:
-    image: webapplication1
+
+  fitcoach-api:
     build:
       context: .
-      dockerfile: WebApplication1/Dockerfile
+      dockerfile: FitCoach.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=mongodb://mongo:27017
+      - MongoDB__DatabaseName=fitcoach
+      - MLService__BaseUrl=http://fitcoach-ml:8087
+      - MLService__ServiceKey=${INTERNAL_SERVICE_KEY}
+      - Encryption__Key=${ENCRYPTION_KEY}
+    depends_on:
+      - mongo
+      - fitcoach-ml
+    networks:
+      - fitcoach-network
 
+  fitcoach-ml:
+    build:
+      context: ../../../python/PycharmProjects/FitCoach.ML
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - MONGODB_URI=mongodb://mongo:27017/fitcoach
+    depends_on:
+      - mongo
+    networks:
+      - fitcoach-network
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - fitcoach-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - fitcoach-network
+
+volumes:
+  mongo-data:
+
+networks:
+  fitcoach-network:
+    driver: bridge
