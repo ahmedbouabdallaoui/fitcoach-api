@@ -1,4 +1,6 @@
 using FitCoach.Api.Infrastructure.MongoDB;
+using FitCoach.Api.Infrastructure.Repositories;
+using FitCoach.Api.Infrastructure.Repositories.Interfaces;
 using FitCoach.Api.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Scalar.AspNetCore;
@@ -31,12 +33,16 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<EncryptionService>();
 //"It is recommended to store a MongoClient instance in a global place,
 //either as a static variable or in an IoC container with a singleton lifetime."//
-
 builder.Services.AddSingleton<MongoDbContext>();
+// --- Repositories ---
+// Scoped — one instance per request, disposed after response is sent
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<ITrainingPlanRepository, TrainingPlanRepository>();
+builder.Services.AddScoped<INutritionAdviceRepository, NutritionAdviceRepository>();
+builder.Services.AddScoped<IInjuryPredictionRepository, InjuryPredictionRepository>();
+builder.Services.AddScoped<IEquipmentRecommendationRepository, EquipmentRecommendationRepository>();
 
-// ---------------------------------------------------
 var app = builder.Build();
-// ---------------------------------------------------
 
 // --- API Docs (Development only) ---
 if (app.Environment.IsDevelopment())
@@ -49,7 +55,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// --- Middleware Pipeline (order matters!) ---
+// --- Middleware Pipeline ---
 app.UseHttpsRedirection();
 app.UseAuthentication(); // 1. Identify the user from JWT
 app.UseAuthorization();  // 2. Check what the user is allowed to do
