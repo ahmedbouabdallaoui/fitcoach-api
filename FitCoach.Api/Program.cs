@@ -1,5 +1,6 @@
 using FitCoach.Api.Infrastructure.HttpClients;
 using FitCoach.Api.Infrastructure.HttpClients.Interfaces;
+using FitCoach.Api.Infrastructure.Messaging;
 using FitCoach.Api.Infrastructure.MongoDB;
 using FitCoach.Api.Infrastructure.Repositories;
 using FitCoach.Api.Infrastructure.Repositories.Interfaces;
@@ -45,6 +46,7 @@ builder.Services.AddSingleton<EncryptionService>();
 //"It is recommended to store a MongoClient instance in a global place,
 //either as a static variable or in an IoC container with a singleton lifetime."//
 builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddSingleton<IInjuryAlertPublisher, InjuryAlertPublisher>();
 // --- Repositories ---
 // Scoped — one instance per request, disposed after response is sent
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
