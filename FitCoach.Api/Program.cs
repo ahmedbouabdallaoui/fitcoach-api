@@ -1,3 +1,5 @@
+using FitCoach.Api.Infrastructure.HttpClients;
+using FitCoach.Api.Infrastructure.HttpClients.Interfaces;
 using FitCoach.Api.Infrastructure.MongoDB;
 using FitCoach.Api.Infrastructure.Repositories;
 using FitCoach.Api.Infrastructure.Repositories.Interfaces;
@@ -28,6 +30,15 @@ builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.Authenticati
             ValidateIssuerSigningKey = true
         };
     });
+builder.Services.AddHttpClient<IMLServiceClient, MLServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["MLService:BaseUrl"]
+                                 ?? "http://localhost:8087");
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("X-Service-Token",
+        builder.Configuration["MLService:ServiceToken"]);
+});
+
 
 builder.Services.AddAuthorization();
 builder.Services.AddSingleton<EncryptionService>();

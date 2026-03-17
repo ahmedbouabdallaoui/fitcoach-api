@@ -12,4 +12,6 @@ public class GenerateTrainingPlanRequest
     [Required] public double WeightKg { get; set; }
     [Required] public double HeightCm { get; set; }
     [Required] public int Age { get; set; }
+    [Required] public string Gender { get; set; } = string.Empty; // "Male" or "Female"
+
 }
