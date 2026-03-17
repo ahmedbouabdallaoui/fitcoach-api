@@ -18,6 +18,10 @@ public class ConversationRepository : IConversationRepository
         // If it doesn't exist MongoDB creates it automatically on first insert
         _collection = context.GetCollection<Conversation>("conversations");
     }
+    public async Task DeleteAsync(string id)
+    {
+        await _collection.DeleteOneAsync(c => c.Id == id);
+    }
 
     // Find one conversation by its MongoDB ObjectId
     // Returns null if not found — caller decides what to do with null

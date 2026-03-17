@@ -10,4 +10,5 @@ public interface IConversationRepository
     Task<List<Conversation>> GetByUserIdAsync(string userId);
     Task<Conversation> CreateAsync(Conversation conversation);
     Task UpdateAsync(Conversation conversation);
+    Task DeleteAsync(string id);
 }

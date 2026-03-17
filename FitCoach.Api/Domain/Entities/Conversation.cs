@@ -15,4 +15,6 @@ public class Conversation
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    public string Title { get; set; } = "New Conversation";
 }
