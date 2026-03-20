@@ -59,6 +59,10 @@ builder.Services.AddScoped<IEquipmentRecommendationRepository, EquipmentRecommen
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IGroqService, GroqService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<ITrainingPlanService, TrainingPlanService>();
+builder.Services.AddScoped<INutritionService, NutritionService>();
+builder.Services.AddScoped<IInjuryPredictionService, InjuryPredictionService>();
+builder.Services.AddScoped<IRAGService, RAGService>();
 
 var app = builder.Build();
 

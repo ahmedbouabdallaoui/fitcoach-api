@@ -5,8 +5,7 @@ namespace FitCoach.Api.Domain.Entities;
 public class Message
 {
     public string Role { get; set; } = string.Empty;  // "user" or "assistant"
-
     public string Content { get; set; } = string.Empty;
-
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public string? Tag { get; set; } // "training" / "nutrition" / "injury" / null
 }
