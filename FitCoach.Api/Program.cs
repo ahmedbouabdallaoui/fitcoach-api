@@ -44,19 +44,21 @@ builder.Services.AddHttpClient<IMLServiceClient, MLServiceClient>(client =>
 
 
 builder.Services.AddAuthorization();
-builder.Services.AddSingleton<EncryptionService>();
 //"It is recommended to store a MongoClient instance in a global place,
 //either as a static variable or in an IoC container with a singleton lifetime."//
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddSingleton<IInjuryAlertPublisher, InjuryAlertPublisher>();
 builder.Services.AddSingleton<IProfileCompletenessChecker, ProfileCompletenessChecker>();
-// --- Repositories ---
-// Scoped — one instance per request, disposed after response is sent
+builder.Services.AddSingleton<EncryptionService>();
+
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<ITrainingPlanRepository, TrainingPlanRepository>();
 builder.Services.AddScoped<INutritionAdviceRepository, NutritionAdviceRepository>();
 builder.Services.AddScoped<IInjuryPredictionRepository, InjuryPredictionRepository>();
 builder.Services.AddScoped<IEquipmentRecommendationRepository, EquipmentRecommendationRepository>();
+builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+builder.Services.AddScoped<IGroqService, GroqService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 var app = builder.Build();
 

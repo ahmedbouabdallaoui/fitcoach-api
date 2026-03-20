@@ -6,4 +6,5 @@ public class GoalValidationMLResponse
     public bool GoalValid { get; set; }
     public string UserGoal { get; set; } = string.Empty;
     public string? WarningMessage { get; set; }
+    public string RecommendedGoal { get; set; } = string.Empty;
 }
