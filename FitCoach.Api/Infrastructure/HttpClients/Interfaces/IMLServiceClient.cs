@@ -1,12 +1,12 @@
-using FitCoach.Api.DTOs.Requests;
+using FitCoach.Api.Domain.Entities;
 using FitCoach.Api.Infrastructure.HttpClients.Responses;
 
 namespace FitCoach.Api.Infrastructure.HttpClients.Interfaces;
 
 public interface IMLServiceClient
 {
-    Task<GoalValidationMLResponse> ValidateGoalAsync(GenerateTrainingPlanRequest request, string userId);
-    Task<TrainingPlanMLResponse> PredictTrainingPlanAsync(GenerateTrainingPlanRequest request, string userId);
-    Task<InjuryPredictionMLResponse> PredictInjuryRiskAsync(InjuryPredictionRequest request, string userId);
-    Task<NutritionMLResponse> CalculateNutritionAsync(GenerateNutritionAdviceRequest request, string userId);
+    Task<GoalValidationMLResponse> ValidateGoalAsync(UserProfile profile, string goal);
+    Task<TrainingPlanMLResponse> PredictTrainingPlanAsync(UserProfile profile, ConversationContext context);
+    Task<InjuryPredictionMLResponse> PredictInjuryRiskAsync(UserProfile profile, ConversationContext context);
+    Task<NutritionMLResponse> CalculateNutritionAsync(UserProfile profile, ConversationContext context);
 }

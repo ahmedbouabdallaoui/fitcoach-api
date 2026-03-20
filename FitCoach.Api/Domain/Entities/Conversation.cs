@@ -17,4 +17,6 @@ public class Conversation
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public string Title { get; set; } = "New Conversation";
+    
+    public ConversationContext Context { get; set; } = new();
 }

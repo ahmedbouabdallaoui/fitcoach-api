@@ -1,9 +1,11 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using FitCoach.Api.Domain.Entities;
 using FitCoach.Api.DTOs.Requests;
 using FitCoach.Api.Infrastructure.HttpClients.Interfaces;
 using FitCoach.Api.Infrastructure.HttpClients.Responses;
+using FitCoach.Api.Mappers;
 using FitCoach.Api.Security;
 
 namespace FitCoach.Api.Infrastructure.HttpClients;
@@ -30,87 +32,44 @@ public class MLServiceClient : IMLServiceClient
         _logger = logger;
     }
 
-    public async Task<GoalValidationMLResponse> ValidateGoalAsync(
-        GenerateTrainingPlanRequest request, string userId)
+    public async Task<GoalValidationMLResponse> ValidateGoalAsync(UserProfile profile, string goal)
     {
-        var payload = new
-        {
-            user_id = userId,
-            age = request.Age,
-            weight_kg = request.WeightKg,
-            height_cm = request.HeightCm,
-            gender = request.Gender,
-            fitness_level = request.FitnessLevel,
-            goal = request.Goal
-        };
-
-        return await PostAsync<GoalValidationMLResponse>("/predict/validate-goal", payload);
+        return await PostAsync<GoalValidationMLResponse>(
+            "/predict/validate-goal",
+            MLPayloadMapper.ToGoalValidationPayload(profile, goal)
+        );
     }
 
-    public async Task<TrainingPlanMLResponse> PredictTrainingPlanAsync(
-        GenerateTrainingPlanRequest request, string userId)
+    public async Task<TrainingPlanMLResponse> PredictTrainingPlanAsync(UserProfile profile, ConversationContext context)
     {
-        var payload = new
-        {
-            user_id = userId,
-            age = request.Age,
-            weight_kg = request.WeightKg,
-            height_cm = request.HeightCm,
-            gender = request.Gender,
-            fitness_level = request.FitnessLevel,
-            goal = request.Goal,
-            days_per_week = request.DaysPerWeek,
-            duration_weeks = request.DurationWeeks
-        };
-
-        return await PostAsync<TrainingPlanMLResponse>("/predict/training-plan", payload);
+        return await PostAsync<TrainingPlanMLResponse>(
+            "/predict/training-plan",
+            MLPayloadMapper.ToTrainingPlanPayload(profile, context)
+        );
     }
 
-    public async Task<InjuryPredictionMLResponse> PredictInjuryRiskAsync(
-        InjuryPredictionRequest request, string userId)
+    public async Task<InjuryPredictionMLResponse> PredictInjuryRiskAsync(UserProfile profile, ConversationContext context)
     {
-        var payload = new
-        {
-            user_id = userId,
-            age = request.Age,
-            weight_kg = request.WeightKg,
-            height_cm = request.HeightCm,
-            weekly_training_hours = request.WeeklyTrainingHours,
-            fitness_level = request.FitnessLevel
-        };
-
-        return await PostAsync<InjuryPredictionMLResponse>("/predict/injury-risk", payload);
+        return await PostAsync<InjuryPredictionMLResponse>(
+            "/predict/injury-risk",
+            MLPayloadMapper.ToInjuryPredictionPayload(profile, context)
+        );
     }
 
-    public async Task<NutritionMLResponse> CalculateNutritionAsync(
-        GenerateNutritionAdviceRequest request, string userId)
+    public async Task<NutritionMLResponse> CalculateNutritionAsync(UserProfile profile, ConversationContext context)
     {
-        var payload = new
-        {
-            user_id = userId,
-            age = request.Age,
-            weight_kg = request.WeightKg,
-            height_cm = request.HeightCm,
-            gender = request.Gender,
-            activity_level = request.ActivityLevel,
-            goal = request.Goal
-        };
-
-        return await PostAsync<NutritionMLResponse>("/predict/nutrition", payload);
+        return await PostAsync<NutritionMLResponse>(
+            "/predict/nutrition",
+            MLPayloadMapper.ToNutritionPayload(profile, context)
+        );
     }
-
-    // --- Generic POST method — encrypt, send, deserialize ---
     private async Task<T> PostAsync<T>(string endpoint, object payload)
     {
         try
         {
-            // Serialize payload to JSON
             var json = JsonSerializer.Serialize(payload);
-
-            // Encrypt payload before sending to Python
             var encrypted = _encryptionService.Encrypt(json);
 
-            // Build request body
             var content = new StringContent(
                 JsonSerializer.Serialize(new { data = encrypted }),
                 Encoding.UTF8,
@@ -120,11 +79,9 @@ public class MLServiceClient : IMLServiceClient
             _logger.LogInformation("Calling ML service: {Endpoint}", endpoint);
 
             var response = await _httpClient.PostAsync(endpoint, content);
-
             response.EnsureSuccessStatusCode();
 
             var responseJson = await response.Content.ReadAsStringAsync();
-
             var result = JsonSerializer.Deserialize<T>(responseJson, JsonOptions);
 
             if (result == null)

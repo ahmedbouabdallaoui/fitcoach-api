@@ -5,6 +5,8 @@ using FitCoach.Api.Infrastructure.MongoDB;
 using FitCoach.Api.Infrastructure.Repositories;
 using FitCoach.Api.Infrastructure.Repositories.Interfaces;
 using FitCoach.Api.Security;
+using FitCoach.Api.Services;
+using FitCoach.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Scalar.AspNetCore;
 
@@ -47,6 +49,7 @@ builder.Services.AddSingleton<EncryptionService>();
 //either as a static variable or in an IoC container with a singleton lifetime."//
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddSingleton<IInjuryAlertPublisher, InjuryAlertPublisher>();
+builder.Services.AddSingleton<IProfileCompletenessChecker, ProfileCompletenessChecker>();
 // --- Repositories ---
 // Scoped — one instance per request, disposed after response is sent
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
