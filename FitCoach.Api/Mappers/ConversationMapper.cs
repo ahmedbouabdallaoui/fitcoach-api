@@ -3,18 +3,20 @@ using FitCoach.Api.DTOs.Responses;
 
 namespace FitCoach.Api.Mappers;
 
-// Converts between Conversation entities and DTOs.
-// Services use this — controllers never touch entities directly.
 public static class ConversationMapper
 {
-    // Maps a Conversation entity to a ConversationResponse DTO
-    public static ConversationResponse ToResponse(Conversation conversation, string reply)
+    public static ConversationResponse ToResponse(Conversation conversation) => new()
     {
-        return new ConversationResponse
+        Id = conversation.Id,
+        Title = conversation.Title,
+        Messages = conversation.Messages.Select(m => new MessageResponse
         {
-            ConversationId = conversation.Id,
-            Reply = reply,
-            UpdatedAt = conversation.UpdatedAt
-        };
-    }
+            Role = m.Role,
+            Content = m.Content,
+            Tag = m.Tag,
+            Timestamp = m.Timestamp
+        }).ToList(),
+        CreatedAt = conversation.CreatedAt,
+        UpdatedAt = conversation.UpdatedAt
+    };
 }

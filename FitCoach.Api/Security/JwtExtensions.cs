@@ -15,4 +15,11 @@ public static class JwtExtensions
     // Extracts the subscription status (free, premium, etc.)
     public static string GetSubscriptionStatus(this ClaimsPrincipal user)
         => user.FindFirst("statutAbonnement")?.Value ?? "free";
+    
+    public static string GetUserName(this ClaimsPrincipal user)
+    {
+        return user.FindFirstValue(ClaimTypes.Name)
+               ?? user.FindFirstValue("name")
+               ?? "User";
+    }
 }
