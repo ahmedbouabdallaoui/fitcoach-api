@@ -53,6 +53,7 @@ public class ProfileService : IProfileService
 
     public async Task SaveAsync(UserProfile profile)
     {
+        profile.IsComplete = _profileChecker.IsProfileComplete(profile);
         profile.UpdatedAt = DateTime.UtcNow;
         await _profileRepository.UpdateAsync(profile);
         _logger.LogInformation("Profile saved for user {UserId}", profile.UserId);

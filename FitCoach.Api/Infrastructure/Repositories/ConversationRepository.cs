@@ -1,6 +1,7 @@
 using FitCoach.Api.Domain.Entities;
 using FitCoach.Api.Infrastructure.MongoDB;
 using FitCoach.Api.Infrastructure.Repositories.Interfaces;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace FitCoach.Api.Infrastructure.Repositories;
@@ -20,14 +21,19 @@ public class ConversationRepository : IConversationRepository
     }
     public async Task DeleteAsync(string id)
     {
-        await _collection.DeleteOneAsync(c => c.Id == id);
+        var objectId = new ObjectId(id);
+        await _collection.DeleteOneAsync(
+            Builders<Conversation>.Filter.Eq("_id", objectId)
+        );
     }
 
-    // Find one conversation by its MongoDB ObjectId
-    // Returns null if not found — caller decides what to do with null
     public async Task<Conversation?> GetByIdAsync(string id)
-        => await _collection.Find(x => x.Id == id).FirstOrDefaultAsync();
-
+    {
+        var objectId = new ObjectId(id);
+        return await _collection
+            .Find(Builders<Conversation>.Filter.Eq("_id", objectId))
+            .FirstOrDefaultAsync();
+    }
     // Find all conversations belonging to a user
     // Returns empty list if none found — never returns null
     public async Task<List<Conversation>> GetByUserIdAsync(string userId)
