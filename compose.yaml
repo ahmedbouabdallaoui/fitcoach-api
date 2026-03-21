@@ -1,5 +1,4 @@
 ﻿services:
-
   fitcoach-api:
     build:
       context: .
@@ -13,12 +12,16 @@
       - MLService__BaseUrl=http://fitcoach-ml:8087
       - MLService__ServiceKey=${INTERNAL_SERVICE_KEY}
       - Encryption__Key=${ENCRYPTION_KEY}
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
     depends_on:
       - mongo
       - fitcoach-ml
+      - rabbitmq
     networks:
       - fitcoach-network
-
   fitcoach-ml:
     build:
       context: ../../../python/PycharmProjects/FitCoach.ML
@@ -34,7 +37,6 @@
       - mongo
     networks:
       - fitcoach-network
-
   mongo:
     image: mongo:7.0
     ports:
@@ -43,7 +45,6 @@
       - mongo-data:/data/db
     networks:
       - fitcoach-network
-
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -51,10 +52,8 @@
       - "15672:15672"
     networks:
       - fitcoach-network
-
 volumes:
   mongo-data:
-
 networks:
   fitcoach-network:
     driver: bridge
