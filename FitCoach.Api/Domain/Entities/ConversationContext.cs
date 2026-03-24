@@ -18,4 +18,6 @@ public class ConversationContext
 
     // State
     public bool IsReadyForGeneration { get; set; } = false;
+    public List<string>? SpecificDays { get; set; }
+
 }

@@ -31,6 +31,75 @@ public class MLServiceClient : IMLServiceClient
         _encryptionService = encryptionService;
         _logger = logger;
     }
+    public async Task<string> GenerateProfileQuestionAsync(string userName, List<string> missingFields)
+{
+    var payload = new
+    {
+        user_name = userName,
+        missing_fields = missingFields
+    };
+    return await PostStringAsync("/groq/profile-question", payload);
+}
+
+public async Task<string> GenerateContextQuestionAsync(string userName, List<string> missingFields, string tag)
+{
+    var payload = new
+    {
+        user_name = userName,
+        missing_fields = missingFields,
+        tag
+    };
+    return await PostStringAsync("/groq/context-question", payload);
+}
+
+public async Task<Dictionary<string, object?>> ExtractProfileDataAsync(string message, List<string> missingFields)
+{
+    var payload = new
+    {
+        message,
+        missing_fields = missingFields
+    };
+    return await PostAsync<Dictionary<string, object?>>("/groq/extract-profile", payload);
+}
+
+public async Task<Dictionary<string, object?>> ExtractContextDataAsync(string message, List<string> missingFields, string tag)
+{
+    var payload = new
+    {
+        message,
+        missing_fields = missingFields,
+        tag
+    };
+    return await PostAsync<Dictionary<string, object?>>("/groq/extract-context", payload);
+}
+
+public async Task<string> GenerateRAGResponseAsync(string message, List<Message> history, UserProfile profile)
+{
+    var payload = new
+    {
+        message,
+        history = history.Select(m => new { role = m.Role, content = m.Content }),
+        profile = new
+        {
+            age = profile.Age,
+            weight_kg = profile.WeightKg,
+            height_cm = profile.HeightCm,
+            fitness_level = profile.FitnessLevel
+        }
+    };
+    return await PostStringAsync("/predict/chat", payload);
+}
+
+public async Task<string> FormatGoalWarningAsync(string userName, string? warning, string recommendedGoal)
+{
+    var payload = new
+    {
+        user_name = userName,
+        warning,
+        recommended_goal = recommendedGoal
+    };
+    return await PostStringAsync("/groq/goal-warning", payload);
+}
 
     public async Task<GoalValidationMLResponse> ValidateGoalAsync(UserProfile profile, string goal)
     {
@@ -88,6 +157,38 @@ public class MLServiceClient : IMLServiceClient
                 throw new Exception($"ML service returned null response for {endpoint}");
 
             return result;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "ML service unreachable: {Endpoint}", endpoint);
+            throw new Exception($"ML service unavailable. Please try again later.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ML service error: {Endpoint}", endpoint);
+            throw;
+        }
+    }
+    private async Task<string> PostStringAsync(string endpoint, object payload)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(payload);
+            var encrypted = _encryptionService.Encrypt(json);
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(new { data = encrypted }),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(endpoint, content);
+            response.EnsureSuccessStatusCode();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<Dictionary<string, object>>(responseJson, JsonOptions);
+
+            return result?["response"]?.ToString() ?? string.Empty;
         }
         catch (HttpRequestException ex)
         {

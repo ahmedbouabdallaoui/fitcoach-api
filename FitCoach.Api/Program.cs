@@ -39,7 +39,7 @@ builder.Services.AddHttpClient<IMLServiceClient, MLServiceClient>(client =>
                                  ?? "http://localhost:8087");
     client.Timeout = TimeSpan.FromSeconds(30);
     client.DefaultRequestHeaders.Add("X-Service-Token",
-        builder.Configuration["MLService:ServiceToken"]);
+        builder.Configuration["MLService:ServiceKey"]);
 });
 
 
