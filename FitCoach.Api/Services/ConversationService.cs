@@ -93,4 +93,24 @@ public class ConversationService : IConversationService
             conversationId, userId
         );
     }
+
+    public async Task<Conversation> UpdateConversationAsync(string conversationId, string userId, string title)
+    {
+        var conversation = await GetConversationAsync(conversationId, userId);
+
+        if (conversation == null)
+            throw new Exception($"Conversation {conversationId} not found.");
+
+        conversation.Title = title;
+        conversation.UpdatedAt = DateTime.UtcNow;
+
+        await _conversationRepository.UpdateAsync(conversation);
+
+        _logger.LogInformation(
+            "Conversation {ConversationId} title updated by user {UserId}",
+            conversationId, userId
+        );
+
+        return conversation;
+    }
 }

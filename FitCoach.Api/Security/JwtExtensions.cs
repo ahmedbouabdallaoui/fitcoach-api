@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace FitCoach.Api.Security;
 
@@ -6,9 +7,24 @@ namespace FitCoach.Api.Security;
 // Usage in any controller: var userId = User.GetUserId();
 public static class JwtExtensions
 {
+    public static string GetUserId(this HttpContext context)
+    {
+        if (context.Request.Headers.TryGetValue("X-User-Id", out var userIdHeader))
+        {
+            var userId = userIdHeader.ToString();
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                return userId;
+            }
+        }
+
+        return context.User.GetUserId();
+    }
+
     // Extracts the user ID from the JWT token
     public static string GetUserId(this ClaimsPrincipal user)
-        => user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+        => user.FindFirst("userId")?.Value
+           ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value
            ?? user.FindFirst("sub")?.Value
            ?? string.Empty;
 

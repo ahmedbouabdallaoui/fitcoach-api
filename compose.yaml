@@ -19,7 +19,6 @@
     depends_on:
       - mongo
       - fitcoach-ml
-      - rabbitmq
     networks:
       - fitcoach-network
   fitcoach-ml:
@@ -43,13 +42,6 @@
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
-    networks:
-      - fitcoach-network
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     networks:
       - fitcoach-network
 volumes:

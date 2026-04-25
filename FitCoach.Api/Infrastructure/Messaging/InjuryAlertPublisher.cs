@@ -7,8 +7,8 @@ namespace FitCoach.Api.Infrastructure.Messaging;
 
 public class InjuryAlertPublisher : IInjuryAlertPublisher, IDisposable
 {
-    private readonly IConnection _connection;
-    private readonly IChannel _channel;
+    private readonly IConnection? _connection;
+    private readonly IChannel? _channel;
     private readonly ILogger<InjuryAlertPublisher> _logger;
 
     private const string ExchangeName = "fitunity.events";
@@ -29,32 +29,47 @@ public class InjuryAlertPublisher : IInjuryAlertPublisher, IDisposable
             Password = configuration["RabbitMQ:Password"] ?? "guest"
         };
 
-        _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
-        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
+        try
+        {
+            _connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
+            _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
 
-        // Declare exchange and queue — idempotent, safe to call every startup
-        _channel.ExchangeDeclareAsync(
-            exchange: ExchangeName,
-            type: ExchangeType.Topic,
-            durable: true
-        ).GetAwaiter().GetResult();
+            // Declare exchange and queue — idempotent, safe to call every startup
+            _channel.ExchangeDeclareAsync(
+                exchange: ExchangeName,
+                type: ExchangeType.Topic,
+                durable: true
+            ).GetAwaiter().GetResult();
 
-        _channel.QueueDeclareAsync(
-            queue: QueueName,
-            durable: true,
-            exclusive: false,
-            autoDelete: false
-        ).GetAwaiter().GetResult();
+            _channel.QueueDeclareAsync(
+                queue: QueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false
+            ).GetAwaiter().GetResult();
 
-        _channel.QueueBindAsync(
-            queue: QueueName,
-            exchange: ExchangeName,
-            routingKey: RoutingKey
-        ).GetAwaiter().GetResult();
+            _channel.QueueBindAsync(
+                queue: QueueName,
+                exchange: ExchangeName,
+                routingKey: RoutingKey
+            ).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "RabbitMQ unavailable at startup. Injury alert publishing disabled.");
+            _connection = null;
+            _channel = null;
+        }
     }
 
     public async Task PublishAsync(InjuryAlertEvent alertEvent)
     {
+        if (_channel == null)
+        {
+            _logger.LogWarning("RabbitMQ channel unavailable. Skipping injury alert for user {UserId}", alertEvent.UserId);
+            return;
+        }
+
         try
         {
             var json = JsonSerializer.Serialize(alertEvent);

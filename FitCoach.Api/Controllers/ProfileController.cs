@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace FitCoach.Api.Controllers;
 
 [ApiController]
-[Route("api/profile")] public class ProfileController : ControllerBase
+[Authorize]
+[Route("api/profile")]
+public class ProfileController : ControllerBase
 {
     private readonly IProfileService _profileService;
     private readonly ILogger<ProfileController> _logger;
-    String userId = "test-user-123";
 
     public ProfileController(
         IProfileService profileService,
@@ -25,16 +26,23 @@ namespace FitCoach.Api.Controllers;
     [HttpGet]
     public async Task<ActionResult<UserProfile>> GetProfile()
     {
-        var userId = "test-user-123";
+        var userId = HttpContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("Missing user identity.");
 
-        var profile = await _profileService.GetOrCreateAsync(userId);
+        var userName = HttpContext.User.GetUserName();
+        var profile = await _profileService.GetOrCreateAsync(userId, userName);
         return Ok(profile);
     }
     
     [HttpPut]
     public async Task<ActionResult<UserProfile>> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
-        var userId = "test-user-123";
+        var userId = HttpContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized("Missing user identity.");
+        }
 
         var profile = await _profileService.GetOrCreateAsync(userId);
 

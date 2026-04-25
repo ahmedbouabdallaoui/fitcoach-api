@@ -38,8 +38,8 @@ public class TrainingPlanService : ITrainingPlanService
             profile, conversation.Context.Goal!
         );
 
-        // --- Step 2: Reality check if goal unrealistic ---
-        if (!goalValidation.GoalValid && conversation.Context.GoalOverridden != true)
+        // --- Step 2: Reality check if goal unrealistic (show warning once only) ---
+        if (!goalValidation.GoalValid && conversation.Context.GoalOverridden == null)
         {
             var warning = await _groqService.FormatGoalWarningAsync(
                 userName,
@@ -47,7 +47,7 @@ public class TrainingPlanService : ITrainingPlanService
                 goalValidation.RecommendedGoal
             );
 
-            // Mark as warned — next message user confirms or declines
+            // false = warning shown; next message from user = they acknowledged it → proceed
             conversation.Context.GoalOverridden = false;
 
             return new ChatResponse

@@ -9,10 +9,9 @@ namespace FitCoach.Api.Controllers;
 
 [ApiController]
 [Route("api/chat")]
+[Authorize]
 public class ChatController : ControllerBase
 {
-    String userId = "test-user-123";
-    String userName = "Ahmed";
     private readonly IChatService _chatService;
     private readonly ILogger<ChatController> _logger;
 
@@ -30,7 +29,12 @@ public class ChatController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ChatResponse>> SendMessage([FromBody] ChatRequest request)
     {
-        var userId = "test-user-123";
+        var userId = HttpContext.GetUserId();
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized("Missing user identity.");
+        }
+
         var userName = HttpContext.User.GetUserName();
 
         

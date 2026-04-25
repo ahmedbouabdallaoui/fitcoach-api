@@ -8,5 +8,6 @@ public interface IConversationService
     Task<Conversation?> GetConversationAsync(string conversationId, string userId);
     Task<List<Conversation>> GetUserConversationsAsync(string userId);
     Task<Conversation> AddMessageAsync(string conversationId, string userId, string role, string content);
+    Task<Conversation> UpdateConversationAsync(string conversationId, string userId, string title);
     Task DeleteConversationAsync(string conversationId, string userId);
 }

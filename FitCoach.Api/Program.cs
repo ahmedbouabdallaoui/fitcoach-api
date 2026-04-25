@@ -23,14 +23,18 @@ builder.Services.AddOpenApi();
 builder.Services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = builder.Configuration["Jwt:Issuer"];
+        var secretKey = builder.Configuration["Jwt:SecretKey"];
         options.TokenValidationParameters = new()
         {
             ValidateIssuer = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidateAudience = false,
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = string.IsNullOrWhiteSpace(secretKey)
+                ? null
+                : new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secretKey))
         };
     });
 builder.Services.AddHttpClient<IMLServiceClient, MLServiceClient>(client =>
@@ -80,7 +84,16 @@ if (app.Environment.IsDevelopment())
 }
 
 // --- Middleware Pipeline ---
-app.UseHttpsRedirection();
+var isRunningInContainer = string.Equals(
+    Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
+    "true",
+    StringComparison.OrdinalIgnoreCase);
+var hasHttpsPortConfigured = !string.IsNullOrWhiteSpace(builder.Configuration["ASPNETCORE_HTTPS_PORT"]);
+
+if (!isRunningInContainer || hasHttpsPortConfigured)
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication(); // 1. Identify the user from JWT
 app.UseAuthorization();  // 2. Check what the user is allowed to do
 app.MapControllers();

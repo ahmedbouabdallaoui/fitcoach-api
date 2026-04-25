@@ -59,12 +59,13 @@ public class ChatService : IChatService
         });
 
         // --- Step 3: Load profile ---
-        var profile = await _profileService.GetOrCreateAsync(userId);
+        var profile = await _profileService.GetOrCreateAsync(userId, userName);
 
         // --- Step 4: Check profile completeness ---
         var missingProfileFields = _profileChecker.GetMissingProfileFields(profile);
+        bool profileWasIncomplete = missingProfileFields.Count > 0;
 
-        if (missingProfileFields.Count > 0)
+        if (profileWasIncomplete)
         {
             profile = await _profileService.UpdateFromMessageAsync(profile, request.Message);
             await _profileService.SaveAsync(profile);
@@ -77,6 +78,17 @@ public class ChatService : IChatService
                     userName, missingProfileFields
                 );
                 return await SaveAndReturnAsync(conversation, question, "question", false);
+            }
+
+            // Profile just completed for the first time — notify the user.
+            // If no tag: tell them to pick a service. If tag set: fall through immediately
+            // to context/plan so the transition feels seamless.
+            if (string.IsNullOrEmpty(request.Tag))
+            {
+                var completeMsg =
+                    $"Your profile is all set, {userName}! I now have everything I need. " +
+                    "Feel free to ask me anything, or choose Training, Nutrition, or Injury from the tag menu to get a personalized plan.";
+                return await SaveAndReturnAsync(conversation, completeMsg, "profile_complete", false);
             }
         }
 

@@ -10,6 +10,7 @@ public class UserProfile
     public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
     public string UserId { get; set; } = string.Empty;
+    public string? Name { get; set; }
 
     // Physical data
     public int? Age { get; set; }

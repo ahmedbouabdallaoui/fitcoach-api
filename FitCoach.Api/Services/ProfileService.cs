@@ -24,15 +24,20 @@ public class ProfileService : IProfileService
         _logger = logger;
     }
 
-    public async Task<UserProfile> GetOrCreateAsync(string userId)
+    public async Task<UserProfile> GetOrCreateAsync(string userId, string? userName = null)
     {
         var profile = await _profileRepository.GetByUserIdAsync(userId);
 
         if (profile == null)
         {
-            profile = new UserProfile { UserId = userId };
+            profile = new UserProfile { UserId = userId, Name = userName };
             await _profileRepository.CreateAsync(profile);
             _logger.LogInformation("Created new profile for user {UserId}", userId);
+        }
+        else if (userName != null && profile.Name == null)
+        {
+            profile.Name = userName;
+            await _profileRepository.UpdateAsync(profile);
         }
 
         return profile;
